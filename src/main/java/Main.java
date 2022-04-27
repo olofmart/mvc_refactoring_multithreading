@@ -39,7 +39,18 @@ public class Main {
             out.flush();
         });
 
-        server.addHandler("POST", "/messages", ((request, out) -> {
+        server.addHandler("POST", "/", ((request, out) -> {
+            System.out.println(request.getPath());
+            out.write(("HTTP/1.1 200 OK\r\n" +
+                    "Content-Length: 43\r\n" +
+                    "Connection: close\r\n" +
+                    "Content-Type: text/html\r\n" +
+                    "\r\n" +
+                    "<html><head></head><body>POST</body></html>\n").getBytes());
+            out.flush();
+        }));
+
+        server.addHandler("POST", "/mvc_multithread/test.html", ((request, out) -> {
             System.out.println(request.getPath());
             out.write(("HTTP/1.1 200 OK\r\n" +
                     "Content-Length: 43\r\n" +
