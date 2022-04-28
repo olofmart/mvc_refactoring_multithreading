@@ -1,5 +1,7 @@
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -8,6 +10,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -24,6 +27,7 @@ public class MyServer {
     private final ExecutorService threadPool;
     private final Map<String, Handler> getHandlers;
     private final Map<String, Handler> postHandlers;
+    private List<NameValuePair> queryParameters;
 
     public MyServer () {
         threadPool = Executors.newFixedThreadPool(poolSize);
@@ -98,11 +102,23 @@ public class MyServer {
                                 line -> line.split(":")[0].trim(),
                                 line -> line.split(":")[1].trim()));
 
+        //System.out.println("headers -> " + headers);
+
         List<String> body = lines.stream().dropWhile(line -> !line.equals("")).collect(Collectors.toList());
 
+        //System.out.println("body -> " + body);
         if (!body.isEmpty()) {
             body.remove(0);
         }
+        //System.out.println("body -> " + body);
+
+        queryParameters = getPostParams(headers, body);
+
+        //System.out.println(queryParameters);
+
+        List<String> queryParam = getPostParam("value");
+
+        //System.out.println(queryParam);
 
         return new Request(method, protocol, path, headers, body);
     }
@@ -141,4 +157,18 @@ public class MyServer {
             postHandlers.put(path, handler);
         }
     }
+
+    public List<NameValuePair> getPostParams (Map<String, String> headers, List<String> body) {
+        List<NameValuePair> queryParameters = null;
+        if (headers.get("Content-Type").equals("application/x-www-form-urlencoded")) {
+            queryParameters = URLEncodedUtils.parse(body.get(0), Charset.defaultCharset());
+        }
+        return queryParameters;
+    }
+
+    public List<String>  getPostParam(String nameParam) {
+        return queryParameters.stream().filter(name -> name.getName().equals(nameParam))
+                .map(param -> param.getValue())
+                .collect(Collectors.toList());
+    };
 }
