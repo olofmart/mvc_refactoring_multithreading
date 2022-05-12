@@ -1,7 +1,10 @@
 import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Request {
     private final String method;
@@ -10,7 +13,6 @@ public class Request {
     private final Map<String, String> headers;
     private List<NameValuePair> queryParameters;
     private final List<String> body;
-
 
     Request (String method, String protocol, String path, Map<String, String> headers,
              List<NameValuePair> queryParameters, List<String> body) {
@@ -22,6 +24,8 @@ public class Request {
         this.body = body;
         //System.out.println(getQueryParam("value"));
     }
+
+
 
     public String getMethod() {
         return method;
@@ -49,4 +53,5 @@ public class Request {
                .map(p -> p.getValue().toString())
                .findFirst().get();
     }
+
 }
