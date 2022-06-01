@@ -31,6 +31,7 @@ public class RequestParser {
             queryParameters = URLEncodedUtils.parse(pathSplit[1], Charset.defaultCharset());
         }
         System.out.println("Query Params" + queryParameters);
+
         Map<String, String> headers = lines.stream().takeWhile(line -> !line.equals(""))
                 .collect(Collectors.toMap(
                         line -> line.split(":")[0].trim(),

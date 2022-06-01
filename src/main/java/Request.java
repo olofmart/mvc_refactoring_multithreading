@@ -1,7 +1,5 @@
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 
-import java.nio.charset.Charset;
+import org.apache.http.NameValuePair;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,8 +48,8 @@ public class Request {
     public String getQueryParam(String name) {
        return queryParameters.stream()
                .filter(p -> p.getName().equals(name))
-               .map(p -> p.getValue().toString())
-               .findFirst().get();
+               .map(p -> p.getValue())
+               .collect(Collectors.joining(", "));
     }
 
 }
