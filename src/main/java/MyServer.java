@@ -1,6 +1,4 @@
 
-import org.apache.commons.fileupload.FileUploadException;
-
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -8,14 +6,10 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.CharBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class MyServer {
     final List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css",
@@ -48,14 +42,17 @@ public class MyServer {
              final BufferedOutputStream out = new BufferedOutputStream(socket.getOutputStream())) {
 
             final Request request;
+            RequestParser parser = new RequestParser();
 
             try {
-                request = createRequest(inputStreamReading(in));
+                request = parser.createRequest(inputStreamReading(in));
             } catch (IllegalArgumentException e) {
                 System.out.println(e.getMessage());
                 socket.close();
                 return;
             }
+
+            //System.out.println("QueryParam " + request.getQueryParam("param1"));
 
             if (!validPaths.contains(request.getPath())) {
                 out.write((
@@ -80,32 +77,45 @@ public class MyServer {
     }
 
 
-    private Request createRequest (List<String> lines) throws IllegalArgumentException {
-        final String[] requestLine = lines.remove(0).split(" ");
-
-        if (requestLine.length != 3) {
-            throw new IllegalArgumentException("Invalid request line found");
-        }
-
-        final String method = requestLine[0];
-
-        final String protocol = requestLine[2];
-
-        final String path = requestLine[1];
-
-        Map<String, String> headers = lines.stream().takeWhile(line -> !line.equals(""))
-                        .collect(Collectors.toMap(
-                                line -> line.split(":")[0].trim(),
-                                line -> line.split(":")[1].trim()));
-
-        List<String> body = lines.stream().dropWhile(line -> !line.equals("")).collect(Collectors.toList());
-
-        if (!body.isEmpty()) {
-            body.remove(0);
-        }
-
-        return new Request(method, protocol, path, headers, body);
-    }
+//    private Request createRequest (List<String> lines) throws IllegalArgumentException {
+//        final String[] requestLine = lines.remove(0).split(" ");
+//
+//        //System.out.println("requestLine: " + requestLine[0] + "\n" + requestLine[1] + "\n" + requestLine[2]);
+//        if (requestLine.length != 3) {
+//            throw new IllegalArgumentException("Invalid request line found");
+//        }
+//
+//        final String method = requestLine[0];
+//        //System.out.println(method);
+//
+//        final String protocol = requestLine[2];
+//        //System.out.println(protocol);
+//
+//        String[] pathSplit = requestLine[1].split("\\?");
+//        //System.out.println("pathSplit: " + pathSplit[0] + " " + pathSplit[1]);
+//        final String path = pathSplit[0];
+//        //System.out.println(path);
+//
+//        List<NameValuePair> queryParameters = null;
+//        if (pathSplit.length > 1) {
+//            queryParameters = URLEncodedUtils.parse(pathSplit[1], Charset.defaultCharset());
+//        }
+//        //System.out.println("Query Params" + queryParameters);
+//        Map<String, String> headers = lines.stream().takeWhile(line -> !line.equals(""))
+//                        .collect(Collectors.toMap(
+//                                line -> line.split(":")[0].trim(),
+//                                line -> line.split(":")[1].trim()));
+//        //System.out.println("Headers: " + headers);
+//
+//        List<String> body = lines.stream().dropWhile(line -> !line.equals("")).collect(Collectors.toList());
+//        //System.out.println("Body: " + body);
+//
+//        if (!body.isEmpty()) {
+//            body.remove(0);
+//        }
+//
+//        return new Request(method, protocol, path, headers, queryParameters, body);
+//    }
 
 
     private List<String> inputStreamReading(BufferedReader in) throws IOException {
